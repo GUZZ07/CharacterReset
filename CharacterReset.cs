@@ -347,7 +347,7 @@ namespace CharacterReset
 				bool online = true;
 				int userid = 0;
 
-				List<TSPlayer> players = TShock.Utils.FindPlayer(username);
+				List<TSPlayer> players = TSPlayer.FindByNameOrID(username);
 				if (players.Count < 1) //if player not found online
 				{
 					online = false;
@@ -362,14 +362,14 @@ namespace CharacterReset
 
 				if (!online)
 				{
-					if (TShock.Users.GetUserByName(username) == null)
+					if (TShock.UserAccounts.GetUserAccountByName(username) == null)
 					{
 						player.SendErrorMessage("Username \"{0}\" not found in database.", username);
 						return;
 					}
 					else
 					{
-						userid = TShock.Users.GetUserByName(username).ID;
+						userid = TShock.UserAccounts.GetUserAccountByName(username).ID;
 					}
 				}
 
@@ -384,7 +384,7 @@ namespace CharacterReset
 								ResetInventory(players[0]);
 								ResetQuests(players[0]);
 								ResetBanks(players[0]);
-								player.SendSuccessMessage(players[0].User.Name + "'s character has been reset!");
+								player.SendSuccessMessage(players[0].Account.Name + "'s character has been reset!");
 								players[0].SendInfoMessage("Your character has been reset!");
 							}
 							else
@@ -406,7 +406,7 @@ namespace CharacterReset
 							if (online)
 							{
 								ResetStats(players[0]);
-								player.SendSuccessMessage(players[0].User.Name + "'s stats have been reset!");
+								player.SendSuccessMessage(players[0].Account.Name + "'s stats have been reset!");
 								players[0].SendInfoMessage("Your stats have been reset!");
 							}
 							else
@@ -429,13 +429,13 @@ namespace CharacterReset
 							{
 								ResetInventory(players[0]);
 								ResetBanks(players[0]);
-								player.SendSuccessMessage(players[0].User.Name + "'s inventory has been reset!");
+								player.SendSuccessMessage(players[0].Account.Name + "'s inventory has been reset!");
 								players[0].SendInfoMessage("Your inventory has been reset!");
 							}
 							else
 							{
 								var inventory = new StringBuilder();
-								for (int i = 0; i < Terraria.Main.maxInventory; i++)
+								for (int i = 0; i < Terraria.Main.InventoryItemSlotsCount; i++)
 								{
 									if (i > 0)
 									{
@@ -469,7 +469,7 @@ namespace CharacterReset
 							if (online)
 							{
 								ResetQuests(players[0]);
-								player.SendSuccessMessage(players[0].User.Name + "'s quests have been reset to 0!");
+								player.SendSuccessMessage(players[0].Account.Name + "'s quests have been reset to 0!");
 								players[0].SendInfoMessage("Your quests have been reset to 0!");
 							}
 							else
@@ -579,7 +579,7 @@ namespace CharacterReset
 							}
 
 							var inventory = new StringBuilder(); //TShock's SeedInitialData method
-							for (int i = 0; i < Terraria.Main.maxInventory; i++)
+							for (int i = 0; i < Terraria.Main.InventoryItemSlotsCount; i++)
 							{
 								if (i > 0)
 								{
@@ -701,8 +701,12 @@ namespace CharacterReset
 			{
 				player.TPlayer.bank3.item[k].netDefaults(0);
 			}
+			for (int k = 0; k <player.TPlayer.bank4.item.Length; k++)
+			{
+				player.TPlayer.bank4.item[k].netDefaults(0);
+			}
 
-			for (int k = NetItem.MaxInventory - (NetItem.PiggySlots + NetItem.SafeSlots + NetItem.ForgeSlots)-1; k < NetItem.MaxInventory; k++)
+			for (int k = NetItem.MaxInventory - (NetItem.PiggySlots + NetItem.SafeSlots + NetItem.ForgeSlots + player.TPlayer.bank4.item.Length) -1; k < NetItem.MaxInventory; k++)
 			{
 				NetMessage.SendData((int)PacketTypes.PlayerSlot, -1, -1, NetworkText.Empty, player.Index, (float)k, 0f, 0f, 0);
 			}
